@@ -1,0 +1,101 @@
+// Ferry data model. The guard rails that Prisma cannot express (`CHECK`
+// constraints) are added by hand in the `add_checks` migration; see
+// prisma/migrations for the exact SQL.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated"
+  runtime      = "nodejs"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Currency {
+  cNGN
+  cGHS
+  cXAF
+  USDx
+  EURx
+}
+
+enum TransactionType {
+  deposit
+  swap
+  transfer
+}
+
+enum RateSource {
+  live
+  stale
+  fallback
+  fixed
+}
+
+model Wallet {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String?  @unique
+  mobile    String?  @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  balances     Balance[]
+  transactions Transaction[] @relation("TransactionInitiator")
+  sent         Transaction[] @relation("TransactionSource")
+  received     Transaction[] @relation("TransactionDestination")
+
+  @@map("wallet")
+}
+
+model Balance {
+  walletId String          @map("wallet_id") @db.Uuid
+  currency Currency
+  amount   Decimal         @default(0) @db.Decimal(30, 8)
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@id([walletId, currency])
+  @@index([walletId])
+  @@map("balance")
+}
+
+model Transaction {
+  id                  String          @id @default(uuid()) @db.Uuid
+  type                TransactionType
+  sourceWalletId      String?         @map("source_wallet_id") @db.Uuid
+  destinationWalletId String?         @map("destination_wallet_id") @db.Uuid
+  sourceCurrency      Currency?       @map("source_currency")
+  sourceAmount        Decimal?        @map("source_amount") @db.Decimal(30, 8)
+  destinationCurrency Currency        @map("destination_currency")
+  destinationAmount   Decimal         @map("destination_amount") @db.Decimal(30, 8)
+  rate                Decimal?        @db.Decimal(30, 12)
+  rateSource          RateSource?     @map("rate_source")
+  rateFetchedAt       DateTime?       @map("rate_fetched_at")
+  initiatorWalletId   String          @map("initiator_wallet_id") @db.Uuid
+  idempotencyKey      String          @map("idempotency_key")
+  requestHash         String          @map("request_hash")
+  createdAt           DateTime        @default(now()) @map("created_at")
+
+  sourceWallet      Wallet? @relation("TransactionSource", fields: [sourceWalletId], references: [id], onDelete: Cascade)
+  destinationWallet Wallet? @relation("TransactionDestination", fields: [destinationWalletId], references: [id], onDelete: Cascade)
+  initiatorWallet   Wallet  @relation("TransactionInitiator", fields: [initiatorWalletId], references: [id], onDelete: Cascade)
+
+  @@unique([initiatorWalletId, idempotencyKey])
+  @@index([sourceWalletId])
+  @@index([destinationWalletId])
+  @@index([createdAt])
+  @@map("transaction")
+}
+
+model FxRate {
+  id        String   @id @default(uuid()) @db.Uuid
+  base      Currency
+  quote     Currency
+  rate      Decimal  @db.Decimal(30, 12)
+  source    String
+  fetchedAt DateTime @map("fetched_at")
+
+  @@unique([base, quote])
+  @@map("fx_rate")
+}

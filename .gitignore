@@ -1,0 +1,36 @@
+# compiled output
+/dist
+/coverage
+/node_modules
+
+# generated prisma client
+/src/generated
+
+# logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# typescript incremental build info
+*.tsbuildinfo
+
+# env
+.env
+.env.test
+.env.*
+!.env.example
+!.env.test.example
+
+# os
+.DS_Store
+Thumbs.db
+
+# editor
+.idea
+*.swo
+*.swp
+AGENTS.md
