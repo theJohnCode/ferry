@@ -5,8 +5,8 @@ import {
 } from 'class-validator';
 
 /**
- * Cross-field check: the property must differ from another property in the
- * same object (so a swap cannot be cNGN -> cNGN, which is a no-op).
+ * Validates that a property differs from another property on the same object,
+ * so a swap cannot target the currency it starts from.
  */
 export function IsDifferentFrom(
   property: string,

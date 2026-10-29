@@ -17,9 +17,6 @@ class Server {
     return Server.instance;
   }
 
-  /**
-   * Add Swagger documentation
-   */
   private addSwagger(app: INestApplication): void {
     const config = new DocumentBuilder()
       .setTitle('Ferry API')
@@ -81,11 +78,7 @@ class Server {
     });
   }
 
-  /**
-   * Start the server
-   */
   public async start(): Promise<void> {
-    // Validate environment variables on boot
     EnvironmentService.validate();
 
     const app = await NestFactory.create(AppModule);

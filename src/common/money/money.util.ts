@@ -5,9 +5,7 @@ import { Prisma } from '../../generated/client';
 // would silently round the value before the explicit 8-decimal rounding.
 Prisma.Decimal.set({ precision: 40 });
 
-// Money is never a JavaScript number. Amounts arrive as strings, are parsed
-// into exact decimals, stored as DECIMAL(30, 8) and serialised with a fixed
-// scale so the output format is deliberate rather than incidental.
+// Money is never a JavaScript number: exact decimals in, fixed scale out.
 export const MONEY_SCALE = 8;
 
 // DECIMAL(30, 8) holds at most 22 integer digits. Values at or above 10^22
@@ -49,8 +47,10 @@ export function parseMoney(value: string): Prisma.Decimal {
   return new Prisma.Decimal(value);
 }
 
-// Rounding rule: converted amounts round down to MONEY_SCALE. The platform
-// can therefore never create value for itself through rounding.
+/**
+ * Converted amounts round down to MONEY_SCALE, so rounding can never create
+ * value for the platform.
+ */
 export function roundDown(value: Prisma.Decimal): Prisma.Decimal {
   return value.toDecimalPlaces(MONEY_SCALE, Prisma.Decimal.ROUND_DOWN);
 }

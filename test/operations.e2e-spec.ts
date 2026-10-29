@@ -397,7 +397,6 @@ describe('Ledger operations (e2e)', () => {
       expect(all.body.items).toHaveLength(3);
       expect(all.body.page).toBe(1);
       expect(all.body.limit).toBe(20);
-      // Newest first: the swap is at the top, the very first deposit at the bottom.
       expect(all.body.items[0].type).toBe('swap');
       expect(all.body.items[0].direction).toBe('self');
       expect(all.body.items[2].type).toBe('deposit');

@@ -45,7 +45,6 @@ describe('Concurrency (e2e)', () => {
       (result): result is PromiseFulfilledResult<request.Response> =>
         result.status === 'fulfilled',
     );
-    // Two settling shapes: a rejected promise (never thrown here) or real data.
     const succeeded = fulfilled.filter((result) => result.value.status === 201);
     const insufficient = fulfilled.filter(
       (result) => result.value.status === 422,

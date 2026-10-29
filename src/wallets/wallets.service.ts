@@ -86,7 +86,6 @@ export class WalletsService {
         createdAt: wallet.createdAt.toISOString(),
       };
     } catch (error) {
-      // A unique violation on email or mobile means the wallet exists.
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'

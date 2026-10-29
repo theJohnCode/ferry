@@ -71,7 +71,9 @@ export class RatesService {
     return set;
   }
 
-  // Cross rate between any two coins, computed through USD.
+  /**
+   * Converts through USD, so every pair works without storing each combination.
+   */
   public crossRate(
     base: Currency,
     quote: Currency,

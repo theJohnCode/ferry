@@ -40,7 +40,6 @@ describe('Wallets (e2e)', () => {
         .send({ mobile: '0803 123 4567' })
         .expect(201);
 
-      // Normalised to E.164.
       expect(response.body.mobile).toBe('+2348031234567');
       expect(response.body.email).toBeNull();
     });

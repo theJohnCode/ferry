@@ -6,9 +6,10 @@ export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-// Accepts "0803 123 4567", "+234 803 123 4567" and "2348031234567"; strips
-// spacing, treats bare digits as Nigerian local numbers, and normalises to
-// E.164 so the same number cannot create two wallets.
+/**
+ * Accepts local and international spellings and returns E.164, so one number
+ * cannot create two wallets.
+ */
 export function normalizeMobile(mobile: string): string {
   const digits = mobile.replace(/[\s\-().]/g, '');
   if (digits.startsWith('+')) {

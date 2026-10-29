@@ -2,9 +2,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorCode } from './error-codes';
 
 /**
- * Domain exceptions carry an ErrorCode so logging and tests can describe the
- * failure precisely. The GlobalExceptionFilter turns them into the standard
- * response shape; the code itself stays in the logs.
+ * Base class for failures that carry a domain code. GlobalExceptionFilter maps
+ * them to the shared error response; the code itself stays in the logs.
  */
 export class DomainException extends HttpException {
   public readonly code: ErrorCode;

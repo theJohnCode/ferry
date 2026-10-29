@@ -5,12 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '../src/app.module';
 
 /**
- * Exports the OpenAPI document served at /docs-json into openapi.json at the
- * repository root. The committed file is the reviewed API contract; re-run
- * `yarn openapi` whenever an endpoint or DTO changes.
- *
- * The document is built from static route/DTO metadata, so no database or
- * listening server is needed — the app is created but never initialised.
+ * Writes the API contract to openapi.json. The document is built from static
+ * route and DTO metadata, so no database or listening server is needed.
  */
 async function main(): Promise<void> {
   const app = await NestFactory.create(AppModule, { logger: false });

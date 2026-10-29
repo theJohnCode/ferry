@@ -1,7 +1,6 @@
 /**
- * Machine-readable identifiers for every error the API can produce. The wire
- * response follows the shared GlobalExceptionFilter shape, but these codes
- * keep logs, tests and tests' failure messages unambiguous.
+ * Machine-readable identifiers used in logs and tests. They are not part of
+ * the HTTP response; GlobalExceptionFilter owns the wire shape.
  */
 export enum ErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',

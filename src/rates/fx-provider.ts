@@ -15,8 +15,10 @@ export interface FxRateFetch {
   readonly fetchedAt: Date;
 }
 
-// Rates are fetched USD-based; every coin pair is a cross rate through USD.
-// Injectable so tests can replace it with a stub (see the e2e specs).
+/**
+ * Fetches USD-based rates; every coin pair is a cross rate through USD.
+ * Injectable so tests can replace it with a stub.
+ */
 @Injectable()
 export class FxProvider {
   private readonly logger = new Logger(FxProvider.name);

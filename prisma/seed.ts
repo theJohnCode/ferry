@@ -3,9 +3,8 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
 /**
- * Seeds two sample wallets so a fresh stack has something to inspect before
- * creating anything. Idempotent: wallets are keyed by their contact and
- * `prisma db seed` is safe to run repeatedly.
+ * Creates two sample wallets. Idempotent: wallets are keyed by contact, so
+ * `prisma db seed` can be re-run.
  */
 async function main(): Promise<void> {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 2 });

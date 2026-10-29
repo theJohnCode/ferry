@@ -1,9 +1,10 @@
 import { Prisma } from '../generated/client';
 import { FIATS, Fiat } from './currencies';
 
-// Last resort when the provider has failed and the database has never seen a
-// successful fetch. Rates are the fiat value of one USD; they drift from the
-// market, which the README lists as a known limitation.
+/**
+ * Fallback rates used when the provider fails and nothing has been stored.
+ * Values are fiat per USD and drift from the market.
+ */
 export const FIXED_USD_TO_FIAT: Record<Fiat, string> = {
   USD: '1',
   NGN: '1600',

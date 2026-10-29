@@ -1,4 +1,3 @@
-# Build stage: install dependencies and compile the app into dist/
 FROM node:22-slim AS build
 
 RUN corepack enable && corepack prepare yarn@1.22.22 --activate
@@ -19,9 +18,6 @@ COPY src ./src
 ENV DATABASE_URL=postgresql://ferry:ferry@localhost:5432/ferry
 RUN yarn prisma generate && yarn build
 
-# Runtime stage: slim image with the compiled app, node_modules and migrations.
-# `prisma migrate deploy` runs at startup, so a fresh compose stack is
-# migrated on the first boot with no extra command.
 FROM node:22-slim AS runtime
 
 ENV NODE_ENV=production

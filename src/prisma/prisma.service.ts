@@ -19,6 +19,10 @@ export interface PrismaService extends PrismaClient {}
 // interactive transaction.
 const POOL_MAX = 25;
 
+/**
+ * Wraps PrismaClient so the app owns the connection lifecycle and tests get a
+ * clean shutdown.
+ */
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
