@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  # Unit and end-to-end tests against a real PostgreSQL service.
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: ferry_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Generate Prisma client
+        run: yarn prisma generate
+      # .env.test is gitignored, so CI creates it from the committed example.
+      - name: Create the test environment file
+        run: cp .env.test.example .env.test
+      - name: Run the full test suite (unit + e2e)
+        run: yarn test
+      - name: Build
+        run: yarn build
+      - name: Lint
+        run: yarn lint:check
+
+  # Proves that `docker compose up --build` leaves a working API behind.
+  docker-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the stack
+        run: docker compose up --build -d
+      - name: Wait for the health endpoint
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl -sf http://localhost:3000/health; then
+              echo "API is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy in time"
+          docker compose logs api
+          exit 1
+      - name: Exercise the API through the compose stack
+        run: |
+          EMAIL="ci-$RANDOM@example.com"
+          WALLET=$(curl -sf -X POST http://localhost:3000/wallets -H 'Content-Type: application/json' -d "{\"email\": \"$EMAIL\"}")
+          echo "wallet: $WALLET"
+          ID=$(echo "$WALLET" | node -e "process.stdin.on('data', (d) => console.log(JSON.parse(d).id))")
+          curl -sf -X POST "http://localhost:3000/wallets/$ID/deposits" \
+            -H 'Content-Type: application/json' \
+            -H "Idempotency-Key: $RANDOM-curl" \
+            -d '{"currency": "cNGN", "amount": "1000.00"}'
+          curl -sf http://localhost:3000/wallets/$ID
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose logs

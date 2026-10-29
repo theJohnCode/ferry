@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ferry_db
+    environment:
+      POSTGRES_DB: ferry
+      POSTGRES_USER: ferry
+      POSTGRES_PASSWORD: ferry
+    # Exposed only for debugging from the host; the API uses the internal
+    # network (host `db`). Port 5433 keeps out of the way of a locally
+    # installed PostgreSQL, which also answers on 5432.
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - ferry_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ferry -d ferry"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    container_name: ferry_api
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://ferry:ferry@db:5432/ferry?schema=public
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # node:22-slim ships neither curl nor wget, so the check uses Node itself.
+      test:
+        ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  ferry_pgdata:
