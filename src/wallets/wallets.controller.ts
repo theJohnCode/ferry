@@ -18,6 +18,10 @@ import {
 import { LedgerService } from '../ledger/ledger.service';
 import { ListTransactionsDto } from '../ledger/dto/list-transactions.dto';
 import { PaginatedTransactionsResponseDto } from '../ledger/dto/transaction-response.dto';
+import {
+  ApiCreateWalletErrors,
+  ApiWalletReadErrors,
+} from '../common/errors/api-error-responses';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { WalletsService } from './wallets.service';
 import {
@@ -38,6 +42,7 @@ export class WalletsController {
     summary: 'Create a wallet with an email address, a mobile number, or both.',
   })
   @ApiCreatedResponse({ type: CreateWalletResponseDto })
+  @ApiCreateWalletErrors()
   public createWallet(
     @Body() dto: CreateWalletDto,
   ): Promise<CreateWalletResponseDto> {
@@ -51,6 +56,7 @@ export class WalletsController {
   })
   @ApiParam({ name: 'id', format: 'uuid', description: 'Wallet id.' })
   @ApiOkResponse({ type: WalletResponseDto })
+  @ApiWalletReadErrors()
   public getWallet(
     @Param(
       'id',
@@ -68,6 +74,7 @@ export class WalletsController {
   })
   @ApiParam({ name: 'id', format: 'uuid', description: 'Wallet id.' })
   @ApiOkResponse({ type: PaginatedTransactionsResponseDto })
+  @ApiWalletReadErrors()
   public listTransactions(
     @Param(
       'id',

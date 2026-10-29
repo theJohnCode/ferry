@@ -25,6 +25,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "The database is unreachable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Liveness and database connectivity, used by the Docker health check.",
@@ -99,6 +109,36 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid input or missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Wallet or transaction not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Insufficient funds, idempotency key reused with a different body, or a result too large for this wallet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Simulate a deposit of a stablecoin into a wallet.",
@@ -151,6 +191,36 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid input or missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Wallet or transaction not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Insufficient funds, idempotency key reused with a different body, or a result too large for this wallet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Swap one stablecoin for another inside the same wallet.",
@@ -193,6 +263,36 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid input or missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Wallet or transaction not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Insufficient funds, idempotency key reused with a different body, or a result too large for this wallet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Send stablecoins from one wallet to another, in the same or another currency.",
@@ -223,6 +323,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Wallet or transaction not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -258,6 +378,26 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid input or missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A wallet already exists for that email or mobile number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Create a wallet with an email address, a mobile number, or both.",
@@ -288,6 +428,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WalletResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Wallet or transaction not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
                 }
               }
             }
@@ -374,6 +534,26 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid input or missing Idempotency-Key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Wallet or transaction not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Transaction history for a wallet, newest first, paginated and filterable by type and currency.",
@@ -415,6 +595,49 @@
   ],
   "components": {
     "schemas": {
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "example": "Wallet balance is too low for this swap."
+          },
+          "errors": {
+            "nullable": true,
+            "example": null,
+            "description": "Validation messages, or null when there is no list.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-10-29T10:20:00.000Z"
+          },
+          "path": {
+            "type": "string",
+            "example": "/wallets/6f0e5a52-3b3c-4d3a-8a55-0f5b7a0f2c11/swaps"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "e5a1c2b3-9f4d-4c8e-a2b7-6d1f0e3c5a04"
+          }
+        },
+        "required": [
+          "success",
+          "message",
+          "errors",
+          "timestamp",
+          "path",
+          "requestId"
+        ]
+      },
       "RatesResponseDto": {
         "type": "object",
         "properties": {

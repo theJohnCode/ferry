@@ -1,5 +1,6 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiServiceUnavailableError } from '../common/errors/api-error-responses';
 import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('Health')
@@ -21,6 +22,7 @@ export class HealthController {
       },
     },
   })
+  @ApiServiceUnavailableError()
   public async check(): Promise<{ status: string; database: string }> {
     try {
       await this.prisma.$queryRaw`SELECT 1`;

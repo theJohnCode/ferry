@@ -16,6 +16,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { IdempotencyKey } from '../common/idempotency/idempotency-key.decorator';
+import {
+  ApiLedgerErrors,
+  ApiWalletReadErrors,
+} from '../common/errors/api-error-responses';
 import { LedgerService } from './ledger.service';
 import { DepositDto } from './dto/deposit.dto';
 import { SwapDto } from './dto/swap.dto';
@@ -41,6 +45,7 @@ export class LedgerController {
     type: TransactionResponseDto,
     description: 'The deposit transaction, with the new balance reflected.',
   })
+  @ApiLedgerErrors()
   public deposit(
     @Param(
       'id',
@@ -67,6 +72,7 @@ export class LedgerController {
     type: TransactionResponseDto,
     description: 'The swap transaction and the rate that was applied.',
   })
+  @ApiLedgerErrors()
   public swap(
     @Param(
       'id',
@@ -94,6 +100,7 @@ export class LedgerController {
     description:
       'The transfer transaction with both sides, the rate applied and a timestamp.',
   })
+  @ApiLedgerErrors()
   public transfer(
     @Body() dto: TransferDto,
     @IdempotencyKey() idempotencyKey?: string,
@@ -105,6 +112,7 @@ export class LedgerController {
   @ApiOperation({ summary: 'Fetch a single transaction by id.' })
   @ApiParam({ name: 'id', format: 'uuid', description: 'Transaction id.' })
   @ApiOkResponse({ type: TransactionResponseDto })
+  @ApiWalletReadErrors()
   public getTransaction(
     @Param(
       'id',
