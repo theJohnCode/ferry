@@ -1,0 +1,811 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "database": {
+                      "type": "string",
+                      "example": "up"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Liveness and database connectivity, used by the Docker health check.",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/rates": {
+      "get": {
+        "operationId": "RatesController_getRates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Current conversion rates between all supported stablecoins, with the source of the rates and the time they were last refreshed.",
+        "tags": [
+          "Rates"
+        ]
+      }
+    },
+    "/wallets/{id}/deposits": {
+      "post": {
+        "operationId": "LedgerController_deposit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Wallet id.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key per deposit.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The deposit transaction, with the new balance reflected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Simulate a deposit of a stablecoin into a wallet.",
+        "tags": [
+          "Ledger"
+        ]
+      }
+    },
+    "/wallets/{id}/swaps": {
+      "post": {
+        "operationId": "LedgerController_swap",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Wallet id.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key per swap.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The swap transaction and the rate that was applied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Swap one stablecoin for another inside the same wallet.",
+        "tags": [
+          "Ledger"
+        ]
+      }
+    },
+    "/transfers": {
+      "post": {
+        "operationId": "LedgerController_transfer",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key per transfer.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The transfer transaction with both sides, the rate applied and a timestamp.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Send stablecoins from one wallet to another, in the same or another currency.",
+        "tags": [
+          "Ledger"
+        ]
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "operationId": "LedgerController_getTransaction",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transaction id.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Fetch a single transaction by id.",
+        "tags": [
+          "Ledger"
+        ]
+      }
+    },
+    "/wallets": {
+      "post": {
+        "operationId": "WalletsController_createWallet",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateWalletResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a wallet with an email address, a mobile number, or both.",
+        "tags": [
+          "Wallets"
+        ]
+      }
+    },
+    "/wallets/{id}": {
+      "get": {
+        "operationId": "WalletsController_getWallet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Wallet id.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Read a wallet: every balance it holds plus the total equivalent in USD.",
+        "tags": [
+          "Wallets"
+        ]
+      }
+    },
+    "/wallets/{id}/transactions": {
+      "get": {
+        "operationId": "WalletsController_listTransactions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Wallet id.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "deposit",
+                "swap",
+                "transfer"
+              ]
+            }
+          },
+          {
+            "name": "currency",
+            "required": false,
+            "in": "query",
+            "description": "Matches the source or destination currency of a transaction.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "cNGN",
+                "cGHS",
+                "cXAF",
+                "USDx",
+                "EURx"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedTransactionsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Transaction history for a wallet, newest first, paginated and filterable by type and currency.",
+        "tags": [
+          "Wallets"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Ferry API",
+    "description": "Sandbox backend for a stablecoin cross-border payment platform: multi-currency wallets, simulated deposits, swaps, transfers and live FX rates.",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Wallets",
+      "description": "Wallet creation, balances and history"
+    },
+    {
+      "name": "Ledger",
+      "description": "Deposits, swaps, transfers and single transactions"
+    },
+    {
+      "name": "Rates",
+      "description": "FX conversion rates between stablecoins"
+    },
+    {
+      "name": "Health",
+      "description": "Liveness and database connectivity"
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "RatesResponseDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "live",
+              "stale",
+              "fallback"
+            ],
+            "description": "Where the rates came from: the live provider, the last stored rates, or the fixed table.",
+            "example": "live"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the rates were fetched. Null only for the fixed table.",
+            "example": "2026-10-29T10:18:00.000Z"
+          },
+          "rates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "example": "1600"
+              }
+            },
+            "description": "Every pair between the five supported coins: rates[base][quote].",
+            "example": {
+              "cNGN": {
+                "USDx": "0.000625",
+                "cGHS": "0.01"
+              },
+              "USDx": {
+                "cNGN": "1600",
+                "cGHS": "16"
+              }
+            }
+          }
+        },
+        "required": [
+          "source",
+          "rates"
+        ]
+      },
+      "DepositDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ],
+            "example": "cNGN"
+          },
+          "amount": {
+            "type": "string",
+            "example": "200000.00",
+            "description": "Amount as a decimal string."
+          }
+        },
+        "required": [
+          "currency",
+          "amount"
+        ]
+      },
+      "TransactionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "deposit",
+              "swap",
+              "transfer"
+            ]
+          },
+          "sourceWalletId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "destinationWalletId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "sourceCurrency": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ],
+            "nullable": true
+          },
+          "sourceAmount": {
+            "type": "string",
+            "nullable": true,
+            "example": "160000.00000000"
+          },
+          "destinationCurrency": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ]
+          },
+          "destinationAmount": {
+            "type": "string",
+            "example": "100.00000000"
+          },
+          "rate": {
+            "type": "string",
+            "nullable": true,
+            "example": "0.000625"
+          },
+          "rateSource": {
+            "type": "string",
+            "enum": [
+              "live",
+              "stale",
+              "fallback",
+              "fixed"
+            ],
+            "nullable": true
+          },
+          "rateFetchedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the applied rate was fetched from its source.",
+            "example": "2026-10-29T10:17:00.000Z"
+          },
+          "initiatorWalletId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "received",
+              "self"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-29T10:16:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "destinationCurrency",
+          "destinationAmount",
+          "initiatorWalletId",
+          "createdAt"
+        ]
+      },
+      "SwapDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ],
+            "example": "cNGN"
+          },
+          "to": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ],
+            "example": "USDx"
+          },
+          "amount": {
+            "type": "string",
+            "example": "160000.00",
+            "description": "Amount of `from` to swap."
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "amount"
+        ]
+      },
+      "TransferDto": {
+        "type": "object",
+        "properties": {
+          "fromWalletId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toWalletId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ],
+            "example": "cNGN"
+          },
+          "amount": {
+            "type": "string",
+            "example": "30000.00"
+          },
+          "toCurrency": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ],
+            "description": "Currency the receiver is credited in. Defaults to `currency`."
+          }
+        },
+        "required": [
+          "fromWalletId",
+          "toWalletId",
+          "currency",
+          "amount"
+        ]
+      },
+      "CreateWalletDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "ada@example.com"
+          },
+          "mobile": {
+            "type": "string",
+            "example": "+2348031234567"
+          }
+        }
+      },
+      "CreateWalletResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "ada@example.com"
+          },
+          "mobile": {
+            "type": "string",
+            "nullable": true,
+            "example": "+2348031234567"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-29T10:15:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt"
+        ]
+      },
+      "WalletBalanceDto": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "cNGN",
+              "cGHS",
+              "cXAF",
+              "USDx",
+              "EURx"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "example": "0.00000000"
+          }
+        },
+        "required": [
+          "currency",
+          "amount"
+        ]
+      },
+      "WalletResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "example": "ada@example.com"
+          },
+          "mobile": {
+            "type": "string",
+            "nullable": true,
+            "example": "+2348031234567"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-10-29T10:15:00.000Z"
+          },
+          "balances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WalletBalanceDto"
+            }
+          },
+          "totalUsd": {
+            "type": "string",
+            "example": "106.25000000"
+          },
+          "ratesFetchedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-10-29T10:18:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "balances",
+          "totalUsd"
+        ]
+      },
+      "PaginatedTransactionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionResponseDto"
+            }
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "total": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "limit",
+          "total"
+        ]
+      }
+    }
+  }
+}
